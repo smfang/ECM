@@ -1,0 +1,13 @@
+{
+    "type": "service_account",
+    "project_id": "ecomonitor-2a295",
+    "private_key_id": "2f737569c0bf6c722ceb306d91f7b31bc9d923f0",
+    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQC6SygCFBR+CSlh\nRczyP5Z+HEpE7C/Fsv6uscmqlHJAYyAdGIB8G9WGK25HLkMwnqEnjOzljQYog1U0\nX7CHzAkR1/MYN9z71H7rgoCRA/gidGjVYFSThNR7dB4CnxLBLVMLXTikAZJmyAtS\nGlryIXBxB7dpf8w37aUXW4llWeJQYHoByHL0DAOmTEXKJ+qTY0F70xEo2KeqiB/8\n3BH2sEAwVqpRvPhNDm5Nag1sPGtoZDq6Lowj3WZk7cs9h/vXz4e/oaMgj4YqOk3F\nlN0hUhl4CN8/CsW/idM9l7o6I+ZeOtKqU88Rtdiuzqy7xPlYY7xRR9oegSyedHiI\nQEVIXwP3AgMBAAECggEAG39jcOcY3T+p8Xc1mJ5FLukrF0BLjuFsUUnhzAFsWc+n\n2lOXB3quSkcX2H7eIQuRGv7kqr9lpM454eir7Gd0AUPAWJdKUYucjlOteXo+Aovv\nO2ukIEAvgudxVI65XHU9uEQyy5aFzxEBBsXoHaxM5govCu33rVuxDiEPRzv8uUM7\npF/sGbfB54A/ii8uOKfNTYoCkIPsCbUuGiZORR9SABYWTFLgBFid6bJDi/vVpPh/\n1uqaaa6M5Hou09tFKUdBjQ/sTazNML66zF6qnsMedOLtquFYfNoAe5POxDnAvlsL\n7zmj1wWMNMmZMwTTJAuI3syCnS5VnH6n138xJPoYOQKBgQDsKHWFWVVJU9Z/KeOD\ncERUlllWD4BxssHkap4VWVXsTKG/KNPLDKdslZ+YpUBaBi1RZpOabKawqm6191P2\nERzJDaycW1YvlyHRPiWBoYrNiFSafQSNjgF03ZzOK7NnWfFKcuN8mFRYrFRLSRxv\nqQsbK5zDjG9+bccyPG99MjZf2QKBgQDJ8iijpZgh1FQPQie7SLL6x+7v+TeyxNao\nnvKDcAtDWhdhk1g8xFJ2uG89yqqRhxoBJX4/muXtKB8rWB3l7Oa5jX2IFZsSz+mC\n+GyXmdN23GNyKXwzIjXU58JwT0M672LdHoi7yJc6sQN9wuWPSRkDG7Uvvv4/gj7H\nPPtHdBzwTwKBgEzBtbja2UqVElGQlt8gvUTU/UJolXHfDQAl2y3LNI8yNRxBs9z6\nRuyXESF3DJx2B4K+mVkG2YLwUj2YntSKqVV7uU+0rCWZtKci0OP6UngNSJpR6gns\nTvLiGNY2BACijjeJcgEMLdYIZPl3UOPGCNMS8MfqPE7WdXkRhZcmm9+5AoGAS6FF\nVwRNVV4PnSdJefpgDUuTUIwlL+5H9h6Q9GihzzeOShzEjv13ZL7t6lZcSuQt+P/x\nqCB6u7aq9bCqgdGXFybGPJDa4tC6wzIGeUBC0eD33Wlr+jp1rqadSzJkG05L2EP3\nMVyORozEofS7xE278E4QLTF6Ro6gtD1CXiA+NkECgYB9233QkD8u/aRisWF5ahkh\nNZZ19N0E5NR9oOr7L4c4Oy+1pYdut//mmvg3NNm4VWLCkn6So/Nmkqj5yaInZira\nAcL7kA9w8l0h1T5WJaKY1qWuSH6IVWPBymv04dsz+EX43A3Fz7lYIK1qF6I0Hhn1\nXZBNYEIBTenZCIrRC8ZA2Q==\n-----END PRIVATE KEY-----\n",
+    "client_email": "firebase-adminsdk-4s7is@ecomonitor-2a295.iam.gserviceaccount.com",
+    "client_id": "101141754988133392322",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-4s7is%40ecomonitor-2a295.iam.gserviceaccount.com"
+  }
+  
