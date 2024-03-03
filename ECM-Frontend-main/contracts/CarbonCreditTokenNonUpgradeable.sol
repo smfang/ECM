@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.4;
+pragma solidity 0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
@@ -67,7 +67,10 @@ contract CarbonCreditToken is ERC20, ERC20Burnable, Ownable, ProjectsStorage {
 
     bool public paused;
 
-    constructor() ERC20("CarbonCreditToken", "CCT") {}
+    constructor(address initialOwner)
+        ERC20("CarbonCreditToken", "CCT")
+        Ownable(initialOwner)
+    {}
 
     modifier onlyOwnerOrController {
         require(msg.sender == controllerAddress || msg.sender == owner(), "not the controller");
@@ -160,6 +163,4 @@ contract CarbonCreditToken is ERC20, ERC20Burnable, Ownable, ProjectsStorage {
         _mint(msg.sender, options[callOptionId].amount);
         options[callOptionId].status = Status.EXERCISED;
     }
-
-    
 }

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.4;
+pragma solidity 0.8.20;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20BurnableUpgradeable.sol";
@@ -94,7 +94,7 @@ contract CarbonCreditTokenUpgradeable is Initializable, ERC20Upgradeable, ERC20B
         __ERC20_init(name, symbol);
         __ERC20Burnable_init();
         __Pausable_init();
-        __Ownable_init();
+        __Ownable_init(msg.sender);
         __UUPSUpgradeable_init();
         // carbonProjectNFT = _projectAddress;
         projectName = _projectName;
@@ -111,14 +111,6 @@ contract CarbonCreditTokenUpgradeable is Initializable, ERC20Upgradeable, ERC20B
 
     function unpause() public onlyOwnerOrController {
         _unpause();
-    }
-
-    function _beforeTokenTransfer(address from, address to, uint256 amount)
-        internal
-        whenNotPaused
-        override
-    {
-        super._beforeTokenTransfer(from, to, amount);
     }
 
     function _authorizeUpgrade(address newImplementation)
@@ -148,8 +140,7 @@ contract CarbonCreditTokenUpgradeable is Initializable, ERC20Upgradeable, ERC20B
     }
 
     function calculateDiscount(uint256 discount, uint256 amount) public view returns (uint256 price) {
-        uint256 price = ((tokenMintPriceInETH * amount) * discount) / 100;
-        return price;
+        return ((tokenMintPriceInETH * amount) * discount) / 100;
     }
 
     function prePurchase(uint256 amount) public whenAvailableToBuy payable {
