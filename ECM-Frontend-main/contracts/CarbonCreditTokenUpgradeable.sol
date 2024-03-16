@@ -3,11 +3,12 @@ pragma solidity 0.8.20;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20BurnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "./ProjectsStorage.sol";
+import "./CarbonProjectNFT.sol";
 
 interface IERC721 {
     function balanceOf(address owner) external view returns (uint256 balance);
@@ -46,7 +47,7 @@ contract CarbonCreditTokenUpgradeable is Initializable, ERC20Upgradeable, ERC20B
 
     // only these addresses will be able to receive the token --> if we make it mintable at buy time then this is not needed
     mapping(address => bool) public allowedRecipients;
-    // mapping(address => Transaction[]) public whitelisedTransactions;
+    mapping(address => Transaction[]) public whitelisedTransactions;
 
     // array to keep track of call options bought by users, will later be used to check and execute them
     Option[] public options;
@@ -58,8 +59,6 @@ contract CarbonCreditTokenUpgradeable is Initializable, ERC20Upgradeable, ERC20B
         // instead of get off chain first and then clone on the chain 
     // address public carbonProjectNFT;
 
-    address public controllerAddress;
-
     string public projectName;
 
     uint256 public availableCreditsForPrePurchase;
@@ -70,14 +69,11 @@ contract CarbonCreditTokenUpgradeable is Initializable, ERC20Upgradeable, ERC20B
     bool public availableToBuy = true;
     bool public optionExecutionEnabled = true;
 
+    CarbonProject public carbonProject;
+
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
         _disableInitializers();
-    }
-
-    modifier onlyOwnerOrController {
-        require(msg.sender == controllerAddress || msg.sender == owner(), "not the controller");
-        _;
     }
 
     modifier whenAvailableToBuy {
@@ -90,7 +86,7 @@ contract CarbonCreditTokenUpgradeable is Initializable, ERC20Upgradeable, ERC20B
         _;
     }
 
-    function initialize(string calldata name, string calldata symbol, string calldata _projectName, address _controllerAddress, uint256 _availableCreditsForPrePurchase, uint256 _availableCreditsForOptions, uint256 _tokenMintPriceInETH) initializer public {
+    function initialize(string calldata name, string calldata symbol, string calldata _projectName, uint256 _availableCreditsForPrePurchase, uint256 _tokenMintPriceInETH, address _projectAddr) initializer public {
         __ERC20_init(name, symbol);
         __ERC20Burnable_init();
         __Pausable_init();
@@ -98,28 +94,31 @@ contract CarbonCreditTokenUpgradeable is Initializable, ERC20Upgradeable, ERC20B
         __UUPSUpgradeable_init();
         // carbonProjectNFT = _projectAddress;
         projectName = _projectName;
-        controllerAddress = _controllerAddress;
         availableCreditsForPrePurchase = _availableCreditsForPrePurchase;
-        availableCreditsForOptions = _availableCreditsForOptions;
         tokenMintPriceInETH = _tokenMintPriceInETH;
+        carbonProject = CarbonProject(_projectAddr);
         premium = 10000;
     }
 
-    function pause() public onlyOwnerOrController {
+    function pause() public onlyOwner {
         _pause();
     }
 
-    function unpause() public onlyOwnerOrController {
+    function unpause() public onlyOwner {
         _unpause();
     }
 
     function _authorizeUpgrade(address newImplementation)
         internal
-        onlyOwnerOrController
+        onlyOwner
         override
     {}
 
-    // function addAllowedRecipient(address recipientAddress) external onlyOwnerOrController {
+    function setAvailableCreditsForOptions(uint256 availableCredits) external onlyOwner {
+        availableCreditsForOptions = availableCredits;
+    }
+
+    // function addAllowedRecipient(address recipientAddress) external onlyOwner {
     //     require(recipientAddress != address(0), "recipient cannot be address 0");
     //     allowedRecipients[recipientAddress] = true;
     // }
@@ -140,7 +139,8 @@ contract CarbonCreditTokenUpgradeable is Initializable, ERC20Upgradeable, ERC20B
     }
 
     function calculateDiscount(uint256 discount, uint256 amount) public view returns (uint256 price) {
-        return ((tokenMintPriceInETH * amount) * discount) / 100;
+        uint256 price = ((tokenMintPriceInETH * amount) * discount) / 100;
+        return price;
     }
 
     function prePurchase(uint256 amount) public whenAvailableToBuy payable {
@@ -157,14 +157,26 @@ contract CarbonCreditTokenUpgradeable is Initializable, ERC20Upgradeable, ERC20B
         if(msg.value - price > 0) {
             payable(msg.sender).transfer(msg.value - price);
         }
+        uint256 currentIndex = latestTransactionIndex[msg.sender];
+        transactions[msg.sender][currentIndex] = Transaction(
+            msg.sender,
+            address(carbonProject),
+            amount,
+            price,
+            block.timestamp,
+            carbonProject.getEndDate(),
+            carbonProject.getStartDate(),
+            false
+        );
+        latestTransactionIndex[msg.sender]++;
     } 
 
-    function createCallOption(uint256 _amount, uint256 _strike, uint256 _expiry) public onlyOwnerOrController {
+    function createCallOption(uint256 _amount, uint256 _strike, uint256 _expiry) public onlyOwner {
         require(availableCreditsForOptions - _amount >= 0, "Out of credits");
         options.push(Option(_strike, block.timestamp, _expiry, _amount, Status.NOT_OWNED, OptionType.CALL, options.length, payable(address(this)), payable(0x0000000000000000000000000000000000000000)));
     } 
 
-    // function createPutOption(uint256 _amount, uint256 _strike, uint256 _expiry) public onlyOwnerOrController {
+    // function createPutOption(uint256 _amount, uint256 _strike, uint256 _expiry) public onlyOwner {
     //     require(availableCreditsForOptions - _amount >= 0, "Out of credits");
     //     options.push(Option(_strike, block.timestamp, _expiry, _amount, Status.NOT_OWNED, OptionType.PUT, options.length, payable(address(this)), payable(0x0000000000000000000000000000000000000000)));
     // } 
@@ -182,18 +194,44 @@ contract CarbonCreditTokenUpgradeable is Initializable, ERC20Upgradeable, ERC20B
         if(msg.value - premium > 0){
             payable(msg.sender).transfer(msg.value - premium);
         }
+        uint256 currentIndex = latestTransactionIndex[msg.sender];
+        transactions[msg.sender][currentIndex] = Transaction(
+            msg.sender,
+            address(carbonProject),
+            option.amount,
+            option.strike,
+            block.timestamp,
+            carbonProject.getEndDate(),
+            carbonProject.getStartDate(),
+            true
+        );
+        latestTransactionIndex[msg.sender]++;
     } 
 
     function executeCallOption(uint256 callOptionId) public whenOptionExecutionEnabled payable{
-        require(options[callOptionId].buyer == msg.sender, "You do not own this option");
-        require(options[callOptionId].status == Status.IN_PROGRESS, "Option not available");
-        require(options[callOptionId].startDate <= block.timestamp, "Option not yet ready");
+        Option memory option = options[callOptionId];
+        require(option.buyer == msg.sender, "You do not own this option");
+        require(option.status == Status.IN_PROGRESS, "Option not available");
+        require(option.startDate <= block.timestamp, "Option not yet ready");
         // user has 3 days to executed the call option when expiry date is reached
-        require(block.timestamp >= options[callOptionId].expiry && block.timestamp < options[callOptionId].expiry + 3 days , "Option is expired");
-        uint exerciseValInETH = options[callOptionId].strike*options[callOptionId].amount;
+        require(block.timestamp >= option.expiry && block.timestamp < option.expiry + 3 days , "Option is expired");
+        uint exerciseValInETH = option.strike * option.amount;
         require(msg.value == exerciseValInETH, "Incorrect ETH amount sent to exercise");
         // require(IERC20Upgradeable(carbonToken).transfer(msg.sender, options[callOptionId].amount), "Error: buyer was not paid");
-        _mint(msg.sender, options[callOptionId].amount);
+        _mint(msg.sender, option.amount);
         options[callOptionId].status = Status.EXERCISED;
+
+        uint256 currentIndex = latestTransactionIndex[msg.sender];
+        transactions[msg.sender][currentIndex] = Transaction(
+            msg.sender,
+            address(carbonProject),
+            option.amount,
+            option.strike,
+            block.timestamp,
+            carbonProject.getEndDate(),
+            carbonProject.getStartDate(),
+            true
+        );
+        latestTransactionIndex[msg.sender]++;
     }
 }

@@ -1,23 +1,21 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.4;
+pragma solidity 0.8.20;
 
-import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC1155/extensions/ERC1155BurnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721BurnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 
-contract CarbonProject is Initializable, ERC721Upgradeable, PausableUpgradeable, OwnableUpgradeable, ERC721BurnableUpgradeable, UUPSUpgradeable {
+contract CarbonProject is Initializable, ERC1155BurnableUpgradeable, PausableUpgradeable, OwnableUpgradeable, UUPSUpgradeable {
     using CountersUpgradeable for CountersUpgradeable.Counter;
 
     uint256 public projectId;
-    uint256 public availableCredits; // available carbon credits to sell
     uint256 public startDate;
     uint256 public endDate;
 
-    string public projectType;
+    string public projectType; // What could be the types ?
 
     CountersUpgradeable.Counter private _tokenIdCounter;
 
@@ -26,14 +24,21 @@ contract CarbonProject is Initializable, ERC721Upgradeable, PausableUpgradeable,
         _disableInitializers();
     }
 
-    function initialize(string calldata projectName ,string calldata symbol, uint256 _availableCredits) initializer public {
-        __ERC721_init(projectName, symbol);
+    function initialize(string calldata projectName) initializer public {
+        __ERC1155_init(projectName);
         __Pausable_init();
-        __Ownable_init();
-        __ERC721Burnable_init();
+        __Ownable_init(msg.sender);
         __UUPSUpgradeable_init();
-        availableCredits = _availableCredits;
     }
+
+    function getEndDate() external view returns(uint256) {
+        return endDate;
+    }
+
+      function getStartDate() external view returns(uint256) {
+        return startDate;
+    }
+
 
     function pause() public onlyOwner {
         _pause();
@@ -43,24 +48,9 @@ contract CarbonProject is Initializable, ERC721Upgradeable, PausableUpgradeable,
         _unpause();
     }
 
-    function setAvailableCredits(uint256 _availableCredits) external onlyOwner {
-        availableCredits = _availableCredits;
-    }
 
-    // Everytime a mint happens, it means that someone (to) bought an amount of carbon credits
-    function safeMint(address to) public onlyOwner returns(uint256){
-        uint256 tokenId = _tokenIdCounter.current();
-        _tokenIdCounter.increment();
-        _safeMint(to, tokenId);
-        return tokenId;
-    }
-
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint256 batchSize)
-        internal
-        whenNotPaused
-        override
-    {
-        super._beforeTokenTransfer(from, to, tokenId, batchSize);
+    function mint(address account, uint256 id, uint256 amount, bytes memory data) public onlyOwner {
+        _mint(account, id, amount, data);
     }
 
     function _authorizeUpgrade(address newImplementation)
